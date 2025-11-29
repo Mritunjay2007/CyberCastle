@@ -15,7 +15,7 @@ function App() {
     <Router>
       <Header />
       <Routes>
-        {/* Main home page */}
+        {/* Home page - with flashcards */}
         <Route path="/" element={
           <>
             <Banner />
@@ -23,14 +23,16 @@ function App() {
             <WhyLearnSection />
 
             <FlashcardTopics />
-            {/* Other page content goes here */}
           </>
         } />
         
-        {/* All topics listing page */}
+        {/* Dashboard page */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* All topics listing */}
         <Route path="/topics" element={<TopicsListPage />} />
         
-        {/* Topic page with content + flashcards + quiz */}
+        {/* Individual topic */}
         <Route path="/topic/:topicId" element={<TopicPage />} />
       </Routes>
       <Footer />

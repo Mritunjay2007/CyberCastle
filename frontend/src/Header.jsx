@@ -48,12 +48,14 @@ const Header = () => {
 
 const navItems = [
   { label: "Home", href: "#home" },
+  { label: "Dashboard", href: "/dashboard" }, // NEW
   { label: "About", href: "#about" },
   { label: "Projects", href: "#projects" },
   { label: "Services", href: "#services" },
   { label: "Contact", href: "#contact" },
-  { label: "Learn", href: "/topics" }, // ← Route to list page
+  { label: "Learn", href: "/topics" },
 ];
+
 
 
   return (
