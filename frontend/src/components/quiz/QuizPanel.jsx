@@ -8,84 +8,117 @@ function QuizPanel({ topicId = "network-attacks", userId = "anonymous" }) {
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState(null);
 
-const loadQuiz = async () => {
-  setLoading(true);
-  setFinished(false);
-  setResult(null);
-  setAnswers({});
-  setCurrent(0);
-  try {
-    console.log('🔍 Fetching from:', `http://localhost:5001/api/quiz/generate`);
-    console.log('🔍 Topic ID:', topicId);
-    
-    const res = await fetch("http://localhost:5001/api/quiz/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topicId, userId })
-    });
-    
-    console.log('🔍 Response status:', res.status);
-    const data = await res.json();
-    console.log('🔍 Response data:', data);
-    
-    if (data.questions) {
-      console.log('✅ Questions received:', data.questions.length);
-      setQuestions(data.questions);
-    } else {
-      console.log('❌ No questions in response');
-      alert("Failed to generate quiz. Check console for details!");
+  const loadQuiz = async () => {
+    setLoading(true);
+    setFinished(false);
+    setResult(null);
+    setAnswers({});
+    setCurrent(0);
+
+    try {
+      console.log('🔍 Fetching from:', `http://localhost:5001/api/quiz/generate`);
+      console.log('🔍 Topic ID:', topicId);
+      
+      const res = await fetch("http://localhost:5001/api/quiz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId, userId })
+      });
+      
+      console.log('🔍 Response status:', res.status);
+      const data = await res.json();
+      console.log('🔍 Response data:', data);
+      
+      if (!res.ok) {
+        console.error("❌ Quiz generate error:", data?.error);
+        alert(data?.error || "Failed to generate quiz. Check console for details!");
+        setQuestions([]);
+      } else if (data.questions && data.questions.length > 0) {
+        console.log('✅ Questions received:', data.questions.length);
+        setQuestions(data.questions);
+      } else {
+        console.log('❌ No questions in response');
+        alert("No questions returned for this topic.");
+      }
+    } catch (e) {
+      console.error('❌ Fetch error:', e);
+      alert("Failed to load quiz! Error: " + e.message);
     }
-  } catch (e) {
-    console.error('❌ Fetch error:', e);
-    alert("Failed to load quiz! Error: " + e.message);
-  }
-  setLoading(false);
-};
 
+    setLoading(false);
+  };
 
+  // For MCQ, optionIndex is a number
   const handleOptionSelect = (questionId, optionIndex) => {
     setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const handleNext = () => current < questions.length - 1 && setCurrent(c => c + 1);
-  const handlePrev = () => current > 0 && setCurrent(c => c - 1);
+  // For FILL, store string
+  const handleFillChange = (questionId, value) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const handleNext = () => current < questions.length - 1 && setCurrent((c) => c + 1);
+  const handlePrev = () => current > 0 && setCurrent((c) => c - 1);
 
   const handleSubmit = async () => {
+    if (!questions.length) return;
     setLoading(true);
+
     try {
+      // IMPORTANT: send all questions, with proper types
       const payload = {
         topicId,
         userId,
-        answers: Object.entries(answers).map(([questionId, selectedIndex]) => ({
-          questionId,
-          selectedIndex
+        answers: questions.map((q) => ({
+          questionId: q.id,
+          selected:
+            q.type === "mcq"
+              ? (typeof answers[q.id] === "number" ? answers[q.id] : -1) // -1 = not answered
+              : (typeof answers[q.id] === "string" ? answers[q.id] : "")  // "" = not answered
         }))
       };
+
+      console.log("📤 Submitting quiz payload:", payload);
+
       const res = await fetch("http://localhost:5001/api/quiz/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+
       const data = await res.json();
-      setResult(data);
-      setFinished(true);
+      console.log("📥 Submit response:", data);
+
+      if (!res.ok) {
+        console.error("❌ Quiz submit error:", data?.error);
+        alert(data?.error || "Failed to submit quiz!");
+      } else {
+        setResult(data);
+        setFinished(true);
+      }
     } catch (e) {
       console.error(e);
       alert("Failed to submit quiz!");
     }
+
     setLoading(false);
   };
 
   if (loading && questions.length === 0) {
-    return <p className="text-center text-gray-300 text-lg">Generating your quiz with AI...</p>;
+    return <p className="text-center text-gray-300 text-lg">Generating your quiz...</p>;
   }
+
+  const currentQuestion = questions[current];
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm text-gray-100 max-w-3xl mx-auto">
       
       {questions.length === 0 && !finished && (
         <div className="text-center">
-          <p className="text-gray-300 mb-6">Generate AI-powered questions adapted to your learning progress</p>
+          <p className="text-gray-300 mb-6">
+            Generate questions based on this topic and test your understanding.
+          </p>
           <button
             onClick={loadQuiz}
             className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl font-bold shadow-lg transition-all text-lg"
@@ -95,7 +128,7 @@ const loadQuiz = async () => {
         </div>
       )}
 
-      {questions.length > 0 && !finished && (
+      {questions.length > 0 && !finished && currentQuestion && (
         <>
           <div className="mb-8">
             <div className="flex justify-between text-sm text-gray-400 mb-2">
@@ -110,27 +143,45 @@ const loadQuiz = async () => {
             </div>
           </div>
 
-          <h3 className="text-2xl font-semibold mb-8">{questions[current].text}</h3>
+          <h3 className="text-2xl font-semibold mb-8">
+            {currentQuestion.text}
+          </h3>
 
-          <ul className="space-y-4 mb-10">
-            {questions[current].options.map((opt, idx) => {
-              const qid = questions[current].id;
-              const selected = answers[qid] === idx;
-              return (
-                <li
-                  key={idx}
-                  onClick={() => handleOptionSelect(qid, idx)}
-                  className={`px-6 py-4 rounded-xl border-2 cursor-pointer transition-all font-medium ${
-                    selected
-                      ? "bg-blue-600/80 border-blue-400 shadow-lg shadow-blue-500/30"
-                      : "bg-white/5 hover:bg-white/10 border-white/20 hover:shadow-md"
-                  }`}
-                >
-                  {opt}
-                </li>
-              );
-            })}
-          </ul>
+          {/* MCQ vs Fill-in-the-blank */}
+          {currentQuestion.type === "fill" ? (
+            <div className="mb-10">
+              <input
+                type="text"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-gray-100 focus:outline-none focus:border-cyan-400"
+                placeholder="Type your answer here..."
+                value={answers[currentQuestion.id] || ""}
+                onChange={(e) => handleFillChange(currentQuestion.id, e.target.value)}
+              />
+              <p className="mt-2 text-sm text-gray-400">
+                The blank in the sentence is shown as "______" in the question text.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-4 mb-10">
+              {currentQuestion.options?.map((opt, idx) => {
+                const qid = currentQuestion.id;
+                const selected = answers[qid] === idx;
+                return (
+                  <li
+                    key={idx}
+                    onClick={() => handleOptionSelect(qid, idx)}
+                    className={`px-6 py-4 rounded-xl border-2 cursor-pointer transition-all font-medium ${
+                      selected
+                        ? "bg-blue-600/80 border-blue-400 shadow-lg shadow-blue-500/30"
+                        : "bg-white/5 hover:bg-white/10 border-white/20 hover:shadow-md"
+                    }`}
+                  >
+                    {opt}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
           <div className="flex items-center justify-between pt-6 border-t border-white/10">
             <button
@@ -140,7 +191,9 @@ const loadQuiz = async () => {
             >
               Previous
             </button>
-            <span className="text-gray-400">{current + 1} / {questions.length}</span>
+            <span className="text-gray-400">
+              {current + 1} / {questions.length}
+            </span>
             {current < questions.length - 1 ? (
               <button
                 onClick={handleNext}
