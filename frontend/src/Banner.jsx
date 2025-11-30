@@ -68,23 +68,13 @@ const Banner = () => {
           </span>
         </motion.div>
 
-        {/* Buttons */}
+        {/* Buttons (only Start Learning — styled like previous Get Started) */}
         <div className="flex gap-4 justify-center">
           <Link to="/topics">
             <motion.button
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-cyan-500/40 transition-all"
-            >
-              🚀 Get Started
-            </motion.button>
-          </Link>
-
-          <Link to="/topics">
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-10 py-4 bg-white/10 text-white font-semibold rounded-full shadow-lg border border-white/20 backdrop-blur hover:bg-white/20 transition-all"
             >
               📚 Start Learning
             </motion.button>
