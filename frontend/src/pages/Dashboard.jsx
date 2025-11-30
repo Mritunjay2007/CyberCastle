@@ -7,64 +7,38 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, use mock data. Later connect to backend
-    const mockUser = {
-      name: "Alex Engineer",
-      totalScore: 3450,
-      topicsStudied: 6,
-      quizzesTaken: 12,
-      streak: 7,
-      accuracy: 82,
-      weakAreas: ["sql-injection", "csrf-attacks"],
-      attemptedTopics: [
-        {
-          id: "network-attacks",
-          title: "Network Attacks",
-          score: 85,
-          attempts: 2,
-          weak: false
-        },
-        {
-          id: "web-application-attacks",
-          title: "Web Application Attacks",
-          score: 78,
-          attempts: 2,
-          weak: true
-        },
-        {
-          id: "authentication-attacks",
-          title: "Authentication Attacks",
-          score: 92,
-          attempts: 1,
-          weak: false
-        },
-        {
-          id: "social-engineering",
-          title: "Social Engineering",
-          score: 88,
-          attempts: 3,
-          weak: false
-        },
-        {
-          id: "malware",
-          title: "Malware",
-          score: 81,
-          attempts: 2,
-          weak: true
-        },
-        {
-          id: "wireless-attacks",
-          title: "Wireless Attacks",
-          score: 76,
-          attempts: 1,
-          weak: true
+  const fetchDashboard = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const base = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${base}/api/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      ]
-    };
-    
-    setUserData(mockUser);
-    setLoading(false);
-  }, []);
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to load dashboard");
+      }
+
+      setUserData(data);
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboard();
+}, []);
 
   if (loading) {
     return (

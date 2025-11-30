@@ -1,17 +1,16 @@
-const router = require("express").Router();
+const express = require("express");
+const router = express.Router();   // ✅ THIS WAS MISSING
 const auth = require("../middleware/auth.middleware");
 const QuizResult = require("../models/quizResult.model");
 const User = require("../models/user.model");
 
 router.get("/", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("username");
-
-    const results = await QuizResult.find({ user: req.userId });
+    const user = await User.findById(req.user.userId).select("username");
+    const results = await QuizResult.find({ user: req.user.userId });
 
     let totalScore = 0;
     let totalQuestions = 0;
-
     const topicMap = {};
 
     results.forEach(r => {
@@ -54,11 +53,11 @@ router.get("/", auth, async (req, res) => {
       : 0;
 
     res.json({
-      name: user.username,
+      name: user?.username || "User",
       totalScore,
       topicsStudied: attemptedTopics.length,
       quizzesTaken: results.length,
-      streak: 1, // you can upgrade later
+      streak: 1,
       accuracy,
       weakAreas,
       attemptedTopics
@@ -70,4 +69,4 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;   // ✅ ALSO REQUIRED
