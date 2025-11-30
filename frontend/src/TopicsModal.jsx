@@ -214,7 +214,7 @@ const TopicsModal = ({ isOpen, onClose }) => {
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <FaShieldAlt className="text-cyan-400 mx-auto mb-4" size={56} />
-                    <p className="text-gray-400 text-lg">Select a topic from the left to get started</p>
+                    <p className="text-gray-400 text-lg">Select a topic from the left to start learning</p>
                   </motion.div>
                 </div>
               )}

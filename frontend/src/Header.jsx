@@ -106,14 +106,6 @@ const Header = () => {
               >
                 Login
               </motion.button>
-
-              <motion.button
-                onClick={() => navigate("/signup")}
-                whileHover={{ scale: 1.05 }}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-cyan-500/40"
-              >
-                Get Started
-              </motion.button>
             </div>
           )}
         </nav>
@@ -196,13 +188,7 @@ const Header = () => {
                     Login
                   </motion.button>
 
-                  <motion.button
-                    onClick={() => navigate("/signup")}
-                    variants={menuItemVariants}
-                    className="px-10 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold shadow-lg"
-                  >
-                    Get Started
-                  </motion.button>
+                  {/* Get Started removed — Login remains accessible above */}
                 </>
               )}
             </nav>
