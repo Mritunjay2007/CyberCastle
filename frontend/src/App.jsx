@@ -9,6 +9,7 @@ import TopicPage from "./pages/TopicPage";
 import TopicsListPage from "./pages/TopicsListPage";
 import Dashboard from "./pages/Dashboard";
 import Footer from "./Footer";
+import CyberBot from "./components/CyberBot";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/topic/:topicId" element={<TopicPage />} />
       </Routes>
       <Footer />
+      <CyberBot />
     </Router>
   );
 }

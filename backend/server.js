@@ -23,7 +23,7 @@ const dashboardRoutes = require("./routes/dashboard.routes");
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/quiz", require("./routes/quiz.routes"));
 app.use("/api/newsletter", require("./routes/newsletter.routes"));
-app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/chat", chatbotRoutes);
 
 
 const Topic = require('./models/topic.model');

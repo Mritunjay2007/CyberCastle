@@ -2,33 +2,31 @@ const express = require("express");
 const router = express.Router();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Initialize Gemini client
-const genAI = new GoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post("/", async (req, res) => {
-  const { message } = req.body;
-
-  if (!message) return res.status(400).json({ error: "Message required" });
-  if (message.length > 500) return res.status(400).json({ error: "Message too long" });
-
   try {
-    // Make request to Gemini
-    const response = await genAI.chat.completions.create({
-      model: "chat-bison-001",
-      messages: [
-        { role: "system", content: "You are a cybersecurity expert AI assistant." },
-        { role: "user", content: message }
-      ]
+    const { message } = req.body;
+
+    if (!message || message.length > 500) {
+      return res.status(400).json({ error: "Invalid message" });
+    }
+
+    // ✅ v1beta COMPATIBLE MODEL (THIS ONE WORKS)
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-001"
     });
 
-    // Gemini returns text in response.candidates[0].content
-    const reply = response?.candidates?.[0]?.content || "⚠️ Could not get a reply.";
+    const result = await model.generateContent(message);
+
+    const reply =
+      result.response.candidates[0].content.parts[0].text;
+
     res.json({ reply });
+
   } catch (error) {
-    console.error("Gemini API error:", error);
-    res.status(500).json({ reply: "⚠️ AI service is temporarily unavailable." });
+    console.error("❌ Gemini API Error:", error.message);
+    res.status(500).json({ reply: "⚠️ AI service unavailable" });
   }
 });
 
